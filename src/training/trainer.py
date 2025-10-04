@@ -14,9 +14,6 @@ Features:
 - Comprehensive training metrics
 - GPU/CPU device handling
 - Reproducible training
-
-Author: EVA5 Student
-Date: 2024
 """
 
 import torch

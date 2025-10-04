@@ -8,9 +8,6 @@ validation, and result visualization.
 
 Usage:
     python main.py [--config CONFIG_FILE] [--epochs EPOCHS] [--lr LEARNING_RATE]
-
-Author: EVA5 Student
-Date: 2024
 """
 
 import argparse

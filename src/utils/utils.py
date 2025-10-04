@@ -7,9 +7,6 @@ This module contains utility functions for:
 - Receptive field calculation
 - Configuration validation
 - File operations
-
-Author: EVA5 Student
-Date: 2024
 """
 
 import torch

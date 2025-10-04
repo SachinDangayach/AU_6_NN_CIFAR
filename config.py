@@ -5,8 +5,6 @@ This module contains all hyperparameters, model settings, and configuration
 parameters used throughout the project. All settings are centralized here
 for easy modification and experimentation.
 
-Author: EVA5 Student
-Date: 2024
 """
 
 import os

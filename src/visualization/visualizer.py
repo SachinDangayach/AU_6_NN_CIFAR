@@ -8,9 +8,6 @@ the CIFAR-10 classification model including:
 - Misclassified image analysis
 - Per-class accuracy analysis
 - Model architecture summary
-
-Author: EVA5 Student
-Date: 2024
 """
 
 import torch
