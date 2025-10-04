@@ -1,156 +1,257 @@
 """
-Configuration file for CIFAR-10 CNN training
+Configuration file for Advanced CIFAR-10 Classification Project
 
-Centralized configuration management for hyperparameters, 
-data settings, and model architecture parameters.
+This module contains all hyperparameters, model settings, and configuration
+parameters used throughout the project. All settings are centralized here
+for easy modification and experimentation.
+
+Author: EVA5 Student
+Date: 2024
 """
 
-import torch
-
-class Config:
-    """Configuration class containing all training and model parameters"""
-    
-    # Data Configuration
-    DATASET_NAME = "CIFAR10"
-    IMAGE_SIZE = (32, 32)
-    NUM_CLASSES = 10
-    TRAIN_DATA_PATH = "./data"
-    
-    # Model Configuration
-    MODEL_DROPOUT = 0.1
-    TARGET_PARAMETERS = 200000  # Parameter limit
-    TARGET_ACCURACY = 85.0      # Target accuracy in %
-    REJECTIVE_FIELD_TARGET = 44  # Minimum receptive field
-    
-    # Training Configuration
-    DEFAULT_EPOCHS = 20
-    DEFAULT_BATCH_SIZE = 128
-    DEFAULT_LEARNING_RATE = 0.1
-    DEFAULT_MOMENTUM = 0.9
-    DEFAULT_WEIGHT_DECAY = 1e-4
-    
-    # Learning Rate Scheduler
-    LR_SCHEDULER_STEP_SIZE = 10
-    LR_SCHEDULER_GAMMA = 0.1
-    
-    # Device Configuration
-    CUDA_AVAILABLE = torch.cuda.is_available()
-    DEFAULT_DEVICE = torch.device("cuda" if CUDA_AVAILABLE else "cpu")
-    NUM_WORKERS = 4 if CUDA_AVAILABLE else 1
-    
-    # Data Augmentation (Albumentations)
-    AUGMENTATION_PROBABILITIES = {
-        "horizontal_flip": 0.5,
-        "shift_scale_rotate": 0.5,
-        "coarse_dropout": 0.5
-    }
-    
-    AUGMENTATION_PARAMS = {
-        "shift_limit": 0.1,
-        "scale_limit": 0.1, 
-        "rotate_limit": 10,
-        "max_holes": 1,
-        "min_holes": 1,
-        "max_height": 16,
-        "max_width": 16,
-        "min_height": 16,
-        "min_width": 16
-    }
-    
-    # CIFAR-10 Normalization Values (calculated from dataset)
-    CIFAR10_MEAN = (0.49, 0.48, 0.45)
-    CIFAR10_STD = (0.25, 0.24, 0.26)
-    
-    # Output Configuration
-    DEFAULT_OUTPUT_DIR = "outputs"
-    SAVE_PLOTS = True
-    PLOT_DPI = 300
-    
-    # Architecture Configuration
-    ARCHITECTURE_BLOCKS = {
-        "conv1": {"in_channels": 3, "out_channels": [32, 32], "kernel_size": 3},
-        "conv2": {"in_channels": 32, "out_channels": [64, 64], "kernel_size": 3}, 
-        "conv3": {"in_channels": 64, "out_channels": [64, 128], "kernel_size": [3, 3], "dilation": [1, 2]},
-        "conv4": {"in_channels": 128, "out_channels": [256, 512], "kernel_size": 3, "stride": [1, 2]},
-        "gap_fc": {"in_features": 512, "out_features": 10}
-    }
-    
-    # Advanced Convolution Settings
-    DEPTHWISE_SEPARABLE_CONV = True
-    DILATED_CONV = True
-    GLOBAL_AVERAGE_POOLING = True
-    NO_MAXPOOLING = True
-    
-    @classmethod
-    def get_device_info(cls):
-        """Get device information"""
-        if cls.CUDA_AVAILABLE:
-            return {
-                "device": cls.DEFAULT_DEVICE,
-                "gpu_name": torch.cuda.get_device_name(0),
-                "cuda_version": torch.version.cuda,
-                "num_gpus": torch.cuda.device_count()
-            }
-        else:
-            return {
-                "device": cls.DEFAULT_DEVICE,
-                "cpu_count": torch.get_num_threads()
-            }
-    
-    @classmethod
-    def print_config(cls):
-        """Print current configuration"""
-        print("=" * 50)
-        print("CONFIGURATION SUMMARY")
-        print("=" * 50)
-        
-        device_info = cls.get_device_info()
-        print(f"Device: {device_info['device']}")
-        
-        if cls.CUDA_AVAILABLE:
-            print(f"GPU: {device_info['gpu_name']}")
-            print(f"CUDA Version: {device_info['cuda_version']}")
-        
-        print(f"\nTraining Parameters:")
-        print(f"- Epochs: {cls.DEFAULT_EPOCHS}")
-        print(f"- Batch Size: {cls.DEFAULT_BATCH_SIZE}")
-        print(f"- Learning Rate: {cls.DEFAULT_LEARNING_RATE}")
-        print(f"- Momentum: {cls.DEFAULT_MOMENTUM}")
-        print(f"- Weight Decay: {cls.DEFAULT_WEIGHT_DECAY}")
-        
-        print(f"\nArchitecture Features:")
-        print(f"- Depthwise Separable Conv: {cls.DEPTHWISE_SEPARABLE_CONV}")
-        print(f"- Dilated Convolution: {cls.DILATED_CONV}")
-        print(f"- Global Average Pooling: {cls.GLOBAL_AVERAGE_POOLING}")
-        print(f"- No MaxPooling: {cls.NO_MAXPOOLING}")
-        
-        print(f"\nTargets:")
-        print(f"- Accuracy: {cls.TARGET_ACCURACY}%")
-        print(f"- Parameters: <{cls.TARGET_PARAMETERS:,}")
-        print(f"- Rejective Field: >{cls.REJECTIVE_FIELD_TARGET}")
-        print("=" * 50)
+import os
+from dataclasses import dataclass, field
+from typing import Tuple, List, Dict, Any
 
 
-class ExperimentConfig(Config):
-    """Configuration for experimental runs with different parameters"""
+@dataclass
+class ModelConfig:
+    """Model architecture configuration parameters"""
     
-    # Custom experiment settings
-    EXPERIMENT_NAME = "cifar10_advanced_convolutions"
+    # Model architecture
+    input_channels: int = 3
+    num_classes: int = 10
+    dropout_rate: float = 0.1
     
-    # Extended training for better accuracy
-    EXTENDED_EPOCHS = 50
-    EXTENDED_LR = 0.05
+    # Conv Block 1 (C1) - Standard convolutions
+    c1_out_channels: int = 32
     
-    # Smaller model variant
-    MINI_MODEL_CONFIG = {
-        "conv1": {"in_channels": 3, "out_channels": [16, 16], "kernel_size": 3},
-        "conv2": {"in_channels": 16, "out_channels": [32, 32], "kernel_size": 3},
-        "conv3": {"in_channels": 32, "out_channels": [32, 64], "kernel_size": [3, 3], "dilation": [1, 2]},
-        "conv4": {"in_channels": 64, "out_channels": [128, 256], "kernel_size": 3, "stride": [1, 2]},
-        "gap_fc": {"in_features": 256, "out_features": 10}
-    }
+    # Conv Block 2 (C2) - Depthwise Separable Convolution
+    c2_out_channels: int = 64
+    
+    # Conv Block 3 (C3) - Dilated Convolution
+    c3_out_channels: int = 128
+    c3_dilation: int = 2
+    
+    # Conv Block 4 (C40) - Stride=2 instead of MaxPooling
+    c4_out_channels: int = 256
+    c4_stride: int = 2
+    
+    # Conv Block 5 - Additional layers for RF > 44
+    c5_out_channels: int = 512
+    
+    # Global Average Pooling + FC
+    fc_hidden_size: int = 512
+    
+    # Parameter constraints
+    max_parameters: int = 200000
+    min_receptive_field: int = 44
 
+
+@dataclass
+class DataConfig:
+    """Data loading and augmentation configuration"""
+    
+    # Dataset settings
+    dataset_name: str = "CIFAR10"
+    data_root: str = "./data"
+    batch_size: int = 128
+    num_workers: int = 4
+    pin_memory: bool = True
+    
+    # Normalization (calculated from CIFAR-10 dataset)
+    mean: Tuple[float, float, float] = (0.49, 0.48, 0.45)
+    std: Tuple[float, float, float] = (0.25, 0.24, 0.26)
+    
+    # Albumentation augmentation parameters
+    horizontal_flip_prob: float = 0.5
+    shift_scale_rotate_prob: float = 0.5
+    shift_limit: float = 0.1
+    scale_limit: float = 0.1
+    rotate_limit: int = 10
+    
+    # CoarseDropout parameters
+    coarse_dropout_prob: float = 0.3
+    max_holes: int = 1
+    max_height: int = 16
+    max_width: int = 16
+    min_holes: int = 1
+    min_height: int = 16
+    min_width: int = 16
+
+
+@dataclass
+class TrainingConfig:
+    """Training configuration parameters"""
+    
+    # Training settings
+    epochs: int = 50
+    learning_rate: float = 0.1
+    momentum: float = 0.9
+    weight_decay: float = 1e-4
+    
+    # Scheduler settings
+    scheduler_type: str = "OneCycleLR"
+    max_lr: float = 0.1
+    
+    # Device settings
+    device: str = "auto"  # "auto", "cuda", "cpu"
+    
+    # Reproducibility
+    seed: int = 1
+    
+    # Model saving
+    save_best_model: bool = True
+    model_save_path: str = "best_model.pth"
+    
+    # Performance targets
+    target_accuracy: float = 85.0
+
+
+@dataclass
+class VisualizationConfig:
+    """Visualization and analysis configuration"""
+    
+    # Plot settings
+    figure_size: Tuple[int, int] = (15, 10)
+    dpi: int = 300
+    
+    # Sample visualization
+    num_sample_images: int = 25
+    num_misclassified_images: int = 25
+    
+    # Save paths
+    training_curves_path: str = "training_curves.png"
+    class_accuracy_path: str = "class_accuracy.png"
+    misclassified_path: str = "misclassified_images.png"
+
+
+@dataclass
+class ProjectConfig:
+    """Main project configuration combining all configs"""
+    
+    model: ModelConfig = field(default_factory=ModelConfig)
+    data: DataConfig = field(default_factory=DataConfig)
+    training: TrainingConfig = field(default_factory=TrainingConfig)
+    visualization: VisualizationConfig = field(default_factory=VisualizationConfig)
+    
+    # Project metadata
+    project_name: str = "Advanced CIFAR-10 Classification"
+    version: str = "1.0.0"
+    author: str = "EVA5 Student"
+    
+    # Logging
+    log_level: str = "INFO"
+    log_file: str = "training.log"
+
+
+def get_config() -> ProjectConfig:
+    """
+    Get the complete project configuration.
+    
+    Returns:
+        ProjectConfig: Complete configuration object
+    """
+    return ProjectConfig()
+
+
+def print_config(config: ProjectConfig) -> None:
+    """
+    Print the current configuration in a readable format.
+    
+    Args:
+        config: Project configuration to print
+    """
+    print("=" * 60)
+    print(f"Project: {config.project_name} v{config.version}")
+    print(f"Author: {config.author}")
+    print("=" * 60)
+    
+    print("\nModel Configuration:")
+    print(f"  Input Channels: {config.model.input_channels}")
+    print(f"  Number of Classes: {config.model.num_classes}")
+    print(f"  Dropout Rate: {config.model.dropout_rate}")
+    print(f"  Max Parameters: {config.model.max_parameters:,}")
+    print(f"  Min Receptive Field: {config.model.min_receptive_field}")
+    
+    print("\nData Configuration:")
+    print(f"  Dataset: {config.data.dataset_name}")
+    print(f"  Batch Size: {config.data.batch_size}")
+    print(f"  Data Root: {config.data.data_root}")
+    print(f"  Normalization Mean: {config.data.mean}")
+    print(f"  Normalization Std: {config.data.std}")
+    
+    print("\nTraining Configuration:")
+    print(f"  Epochs: {config.training.epochs}")
+    print(f"  Learning Rate: {config.training.learning_rate}")
+    print(f"  Scheduler: {config.training.scheduler_type}")
+    print(f"  Target Accuracy: {config.training.target_accuracy}%")
+    
+    print("\nAugmentation Configuration:")
+    print(f"  Horizontal Flip: {config.data.horizontal_flip_prob}")
+    print(f"  ShiftScaleRotate: {config.data.shift_scale_rotate_prob}")
+    print(f"  CoarseDropout: {config.data.coarse_dropout_prob}")
+    
+    print("=" * 60)
+
+
+def validate_config(config: ProjectConfig) -> bool:
+    """
+    Validate the configuration parameters.
+    
+    Args:
+        config: Project configuration to validate
+        
+    Returns:
+        bool: True if configuration is valid, False otherwise
+    """
+    errors = []
+    
+    # Model validation
+    if config.model.max_parameters <= 0:
+        errors.append("Max parameters must be positive")
+    
+    if config.model.min_receptive_field <= 0:
+        errors.append("Min receptive field must be positive")
+    
+    if config.model.dropout_rate < 0 or config.model.dropout_rate > 1:
+        errors.append("Dropout rate must be between 0 and 1")
+    
+    # Data validation
+    if config.data.batch_size <= 0:
+        errors.append("Batch size must be positive")
+    
+    if config.data.num_workers < 0:
+        errors.append("Number of workers cannot be negative")
+    
+    # Training validation
+    if config.training.epochs <= 0:
+        errors.append("Number of epochs must be positive")
+    
+    if config.training.learning_rate <= 0:
+        errors.append("Learning rate must be positive")
+    
+    if config.training.target_accuracy < 0 or config.training.target_accuracy > 100:
+        errors.append("Target accuracy must be between 0 and 100")
+    
+    if errors:
+        print("Configuration validation errors:")
+        for error in errors:
+            print(f"  - {error}")
+        return False
+    
+    return True
+
+
+# Default configuration instance
+DEFAULT_CONFIG = get_config()
 
 if __name__ == "__main__":
-    config = Config()
-    config.print_config()
+    # Test configuration
+    config = get_config()
+    print_config(config)
+    
+    if validate_config(config):
+        print("\n✅ Configuration is valid!")
+    else:
+        print("\n❌ Configuration has errors!")
